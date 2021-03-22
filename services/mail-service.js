@@ -66,7 +66,7 @@ const sendEmailOtpLink = async (to,token) => {
         subject: 'Email verfication ',
         text: 'few steps !',
         html:`
-        <h3>You have requested otp link for password reset link : PayOman </h3>
+        <h3>You have requested otp link for password reset link : CodeSoftic Crm </h3>
         <h4>Click in this <a href="${SERVER}/api/merchant/resetPasswordLink/${token}">link to</a> to Reset Your Password</h4>
         `
       };

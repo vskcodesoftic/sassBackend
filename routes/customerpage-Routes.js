@@ -17,7 +17,14 @@ router.post('/login',
   check('password').not().isEmpty(),
 ],customerController.customerLogin);
 
-
+// change password based on the previous password
 router.post('/changePassword', customerController.updateCustomerPassword)
+
+//sending password reset link for the registerd user on db
+router.post('/forgetPassword', customerController.forgetCustomerPassword)
+
+// password resting after user clicks the link on the email
+router.post('/resetPasswordLink/:token', customerController.newPasswordReset);
+
 
 module.exports = router;
