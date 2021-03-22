@@ -7,8 +7,16 @@ const HttpError = require('./models/httpError')
 
 const homepageRoutes = require('./routes/homepage-Routes')
 
+//adminPageRoutes
+const adminPageRoutes = require('./routes/adminpage-Routes')
+
+//customerPageRoutes
+const customerPageRoutes = require('./routes/customerpage-Routes')
+
 
 const app = express();
+
+app.set('trust proxy', true);
 
 //body parsing jsonData
 app.use(bodyParser.json())
@@ -28,6 +36,12 @@ app.use((req, res, next) => {
 
 
 app.use(homepageRoutes);
+
+//adimn Routes
+app.use('/api/admin/', adminPageRoutes);
+
+//customer Routes
+app.use('/api/customer/',customerPageRoutes);
 
 
 app.use((req, res, next)=>{
