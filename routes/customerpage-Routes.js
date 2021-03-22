@@ -18,5 +18,6 @@ router.post('/login',
 ],customerController.customerLogin);
 
 
+router.post('/changePassword', customerController.updateCustomerPassword)
 
 module.exports = router;
