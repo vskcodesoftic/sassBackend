@@ -18,6 +18,8 @@ const userSchema = new Schema({
     state: { type: String, required: true },
     pincode: { type: Number, required: true },
     address: { type: String, required: true },
+    otpHex: { type: String },
+    isVerified: { type: Boolean, default: false  },
     ip: { type: String, required: true },
     browser: { type: String, required: true },
     location: { type: String, required: true },

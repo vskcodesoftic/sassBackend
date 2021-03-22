@@ -26,5 +26,12 @@ adminController.adminLogin);
 router.post('/changePassword',
 adminController.updateAdminPassword);
 
+//for change Customer Status
+router.post('/updateCustomerStatus',
+adminController.updateCustomerStatus);
+
+//list of al customers
+router.get('/getCustomersList', adminController.getCustomersList);
+
 
 module.exports = router;

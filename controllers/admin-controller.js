@@ -243,9 +243,101 @@ catch(err){
 
 }
 
+//update status of customer Status
+const updateCustomerStatus = async(req, res, next) => {    
+
+    const { email , setStatus } = req.body;
+
+   let existingUser
+   try{
+        existingUser = await User.findOne({ email : email })
+   }
+   catch(err){
+       const error = await new HttpError("something went wrong, updating failed",500)
+       return next(error)
+   }
+   if(!existingUser){
+       const error = new HttpError("user not exists",422)
+       return next(error)
+   }
+
+     //updating customer status 
+     let user
+     try {
+      user = await User.updateOne(
+         { email: email },
+         {
+           status : setStatus
+         }
+       );
+     }
+     catch(err){
+         console.log("error",err)
+         const error = await new HttpError("something went wrong, in failed",500)
+         return next(error)
+       }
+       if(!user){
+         const error = new HttpError("customer not found could not update profile details",401)
+         return next(error)
+       }
+
+res.json({message :" status updated "})
+
+
+}
+
+
+//getList of customers
+const getCustomersList = async (req, res, next) => {
+    let users
+    try{
+        users = await User.find({ role : 'customer' },'-password')
+    }
+    catch(err){
+        const error = new HttpError("can not fetch users complete request",500)
+        return next(error)
+    }
+    res.json({ users : users.map( user => user.toObject({ getters : true}))})
+    
+}
+
+//send otp to via email for verfication
+const forgetPassword = async (req, res) => {
+    const { email } = req.body;
+    if (email) {
+      try {
+        const user = await User.findOne({
+          email,
+        });
+        if (!user) {
+          return res.send({ code: 404, msg: 'User not found' });
+        }
+        const otp = generateOTP();
+        const html = forgetHTML(user.name, otp);
+  
+        await User.updateOne({ _id: user._id }, { otpHex: otp });
+        await sendEmail(user.email, html);
+        return res.send({
+          code: 200,
+          email: user.email,
+          msg: 'OTP send to Your Email.',
+        });
+      } catch (err) {
+        
+        console.log(err);
+        return res.send({ code: 500, msg: 'Internal server error' });
+      }
+    }
+    return res.send({
+      code: 400,
+      msg: 'Email is required',
+    });
+  };
 
 
 
 exports.createUser = createUser;
 exports.adminLogin = adminLogin;
 exports.updateAdminPassword = updateAdminPassword;
+exports.updateCustomerStatus = updateCustomerStatus;
+exports.getCustomersList = getCustomersList;

@@ -5,13 +5,16 @@ const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 
 
+
 const { validationResult } = require('express-validator')
 const  User = require('../models/users-schema')
 
 const HttpError = require('../models/httpError');
 
 const {  sendEmail  ,sendEmailOtpLink, sendEmailOtpLinktoCustomer } = require('../services/mail-service');
-
+const { generateOTP } = require('../util/genarateOtp')
+const { forgetHTML } = require('../tempalates/genralTempalates')
+const { sentryCapture } = require('../services/sentry.service');
 
 
 //customer login 
@@ -222,8 +225,64 @@ const newPasswordReset = async(req,res,next) => {
 
 }
 
+//send otp via email
+const sendEmailVerifyOtp = async (req, res) => {
+    const { email } = req.body;
+    if (email) {
+      try {
+        const user = await User.findOne({
+          email,
+        });
+        if (!user) {
+          return res.send({ code: 404, msg: 'User not found' });
+        }
+        const otp = generateOTP();
+        const html = forgetHTML(user.firstname, otp);
+  
+        await User.updateOne({ _id: user._id }, { otpHex: otp });
+        await sendEmail(user.email, html);
+        return res.send({
+          code: 200,
+          email: user.email,
+          msg: 'OTP send to Your Email.',
+        });
+      } catch (err) {
+        
+        console.log(err);
+        return res.send({ code: 500, msg: 'Internal server error' });
+      }
+    }
+    return res.send({
+      code: 400,
+      msg: 'Email is required',
+    });
+  };
+
+  //verify otp sent to email
+const otpVerify = async (req, res) => {
+    const { otp, email } = req.body;
+    if (otp && email) {
+      try {
+        const user = await User.findOne({ email });
+        if (!user) {
+          return res.send({ code: 404, msg: 'User not Found' });
+        }
+        if (user.otpHex !== otp) return res.send({ code: 400, msg: 'Wrong OTP' });
+        await User.updateOne({ email }, { isVerified: true });
+        return res.send({ code: 200, email: user.email, name: user.name });
+      } catch (err) {
+        sentryCapture(err);
+        console.log(err);
+        res.send({ code: 500, msg: 'Internal Server Error' });
+      }
+    }
+    return res.send({ code: 400, msg: ' OTP required' });
+  };
+
 
 exports.customerLogin = customerLogin;
 exports.updateCustomerPassword = updateCustomerPassword;
 exports.forgetCustomerPassword = forgetCustomerPassword;
 exports.newPasswordReset = newPasswordReset;
+exports.sendEmailVerifyOtp = sendEmailVerifyOtp;
+exports.otpVerify = otpVerify;

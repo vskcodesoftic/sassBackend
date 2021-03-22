@@ -26,5 +26,11 @@ router.post('/forgetPassword', customerController.forgetCustomerPassword)
 // password resting after user clicks the link on the email
 router.post('/resetPasswordLink/:token', customerController.newPasswordReset);
 
+//send otp for email verfication
+router.post('/emailVerfication',customerController.sendEmailVerifyOtp);
+
+//verify otp
+router.post('/otpVerify',customerController.otpVerify);
+
 
 module.exports = router;
